@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Sorva.AI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#e7eef3;color:#1c2833;font-family:system-ui,sans-serif;padding:16px 16px 96px}
+    .wrap{max-width:430px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .brand{font-weight:800;letter-spacing:.08em;color:#16324f}
+    .muted{color:#6d7c8a;font-size:12px}
+    .page{display:none}.page.active{display:block}
+    h2{margin:0 0 12px;font-size:22px;color:#16324f}
+    .hero,.card{border:1px solid #d5dee6;border-radius:16px;padding:14px;margin-bottom:10px;background:#f7fafc;box-shadow:0 8px 20px rgba(22,50,79,.05)}
+    .bal{font-size:30px;font-weight:800;margin:4px 0;color:#16324f}
+    .toprow{display:grid;grid-template-columns:1.6fr .7fr;gap:8px}
+    .label{font-size:11px;letter-spacing:.12em;color:#7b8b99}
+    .coin{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-right:6px;background:linear-gradient(#f4f7fa,#c5ced6);color:#16324f;border:1px solid #b7c3ce}
+    .row{display:flex;align-items:center}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .btn{border:0;background:#1f4e79;color:#fff;border-radius:12px;padding:12px;font-weight:700;width:100%}
+    .btn.light{background:#e8eef3;color:#1f4e79}
+    .btn:disabled{opacity:.45}
+    input{width:100%;padding:12px;border:1px solid #d5dee6;border-radius:12px;margin:6px 0 10px;font-size:16px;background:#fff;color:#1c2833}
+    .nav{position:fixed;left:0;right:0;bottom:0;background:#f7fafc;border-top:1px solid #d5dee6;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 4px 14px}
+    .nav button{border:0;background:0;color:#7b8b99;font-size:11px;padding:8px 0}
+    .nav button.on{color:#1f4e79;font-weight:800}
+    .hist{font-size:13px}
+    .split{display:flex;align-items:center;gap:8px;margin:8px 0 12px;color:#7b8b99;font-size:11px;letter-spacing:.16em}
+    .split:before,.split:after{content:"";height:1px;background:#d5dee6;flex:1}
+    .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .stat{border:1px solid #d5dee6;border-radius:12px;padding:10px;text-align:center;background:#fff}
+    .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .mcard{border:1px solid #d5dee6;border-radius:16px;padding:12px;background:#f7fafc;box-shadow:0 8px 20px rgba(22,50,79,.05)}
+    .frame{border:1px solid #e1e7ed;border-radius:12px;height:128px;display:flex;align-items:center;justify-content:center;margin:8px 0;background:linear-gradient(#fbfcfd,#e7edf2);position:relative;overflow:hidden}
+    .stamp{position:absolute;border:2px solid #1f8a4c;color:#1f8a4c;padding:4px 8px;font-size:12px;font-weight:800;transform:rotate(-12deg);background:rgba(255,255,255,.8)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">SORVA.AI</div>
+    <div class="muted" id="user">Miner</div>
+  </header>
+
+  <section class="page active" id="mine">
+    <div class="toprow">
+      <div class="hero">
+        <div class="label">YOUR BALANCE</div>
+        <div class="row"><span class="coin">S</span><div class="bal" id="avail">0.00</div></div>
+      </div>
+      <div class="hero" style="text-align:center">
+        <div class="label">TOKEN</div>
+        <b>SRV</b>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="split">ACCRUED</div>
+      <div class="row"><span class="coin">S</span><div class="bal" id="accrued">0.00</div></div>
+      <div class="stats">
+        <div class="stat"><div class="label">HOUR</div><b id="perHour">0.00</b></div>
+        <div class="stat"><div class="label">DAY</div><b id="perDay">0.00</b></div>
+        <div class="stat"><div class="label">MONTH</div><b id="perMonth">0.00</b></div>
+      </div>
+      <button class="btn" id="collect">COLLECT</button>
+    </div>
+    <div class="mgrid" id="slots"></div>
+  </section>
+
+  <section class="page" id="partners">
+    <h2>Referrals</h2>
+    <div class="card"><div class="muted">Referral reward</div><b>10 SRV signup bonus + 10% of friends’ earnings</b></div>
+    <div class="card"><div class="muted">Your invite link</div><b id="ref">https://t.me/sorvaai_bot/app</b></div>
+    <div class="grid">
+      <div class="card"><div class="muted">Partners</div><b id="prefCount">0</b></div>
+      <div class="card"><div class="muted">Referral SRV</div><b id="prefEarn">10.00</b></div>
+    </div>
+    <button class="btn" id="copyRef">Copy link</button>
+  </section>
+
+  <section class="page" id="tasks">
+    <h2>Tasks</h2>
+    <div class="card">Invite friends and earn 10 SRV + 10% of their mining.</div>
+    <div class="card">Buy your first machine for 1 SRV.</div>
+    <div class="card">Collect accrued SRV into your balance.</div>
+  </section>
+
+  <section class="page" id="wallet">
+    <h2>Wallet</h2>
+    <div class="hero">
+      <div class="muted">Available</div>
+      <div class="bal" id="wAvail">0.00 SRV</div>
+      <div class="muted" id="usdAvail">0.000000 USDT</div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="muted">Holding</div><b id="wHold">0.00 SRV</b></div>
+      <div class="card"><div class="muted">Rate</div><b>1 SRV = 0.001 USDT</b></div>
+    </div>
+    <div class="card">
+      <b>Deposit</b>
+      <input id="depUsdt" type="number" placeholder="USDT amount">
+      <div class="muted" id="depHint">0 USDT = 0 SRV</div>
+      <button class="btn" id="doDep">Deposit</button>
+    </div>
+    <div class="card">
+      <b>Withdraw</b>
+      <input id="wdSrv" type="number" placeholder="SRV amount">
+      <input id="wdAddr" placeholder="USDT address">
+      <div class="muted" id="wdHint">0 SRV = 0.000000 USDT</div>
+      <button class="btn light" id="doWd">Withdraw</button>
+    </div>
+    <h2>Withdrawal history</h2>
+    <div id="hist"></div>
+  </section>
+
+  <section class="page" id="profile">
+    <h2>Profile</h2>
+    <div class="card"><div class="muted">Name</div><b id="pname">Miner</b></div>
+    <div class="card"><div class="muted">Telegram ID</div><b id="pid">—</b></div>
+    <div class="card"><div class="muted">Machines owned</div><b id="pown">0 / 12</b></div>
+  </section>
+</div>
+
+<nav class="nav">
+  <button data-page="partners">Referrals</button>
+  <button data-page="tasks">Tasks</button>
+  <button data-page="mine" class="on">Mine</button>
+  <button data-page="wallet">Wallet</button>
+  <button data-page="profile">Profile</button>
+</nav>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const RATE = 0.001;
+const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+const name = (user && user.first_name) || "Miner";
+document.getElementById("user").textContent = name;
+document.getElementById("pname").textContent = name;
+document.getElementById("pid").textContent = (user && user.id) || "Open in Telegram";
+if (user && user.id) document.getElementById("ref").textContent = "https://t.me/sorvaai_bot/app?startapp=" + user.id;
+
+const machines = [
+  {id:1, name:"Machine 1", cost:1, pct:10},
+  {id:2, name:"Machine 2", cost:3, pct:12},
+  {id:3, name:"Machine 3", cost:5, pct:14},
+  {id:4, name:"Machine 4", cost:10, pct:16},
+  {id:5, name:"Machine 5", cost:20, pct:18},
+  {id:6, name:"Machine 6", cost:40, pct:20},
+  {id:7, name:"Machine 7", cost:80, pct:22},
+  {id:8, name:"Machine 8", cost:150, pct:24},
+  {id:9, name:"Machine 9", cost:300, pct:26},
+  {id:10, name:"Machine 10", cost:600, pct:28},
+  {id:11, name:"Machine 11", cost:1200, pct:30},
+  {id:12, name:"Machine 12", cost:2500, pct:32}
+];
+
+const KEY = "sorva_v5";
+const data = JSON.parse(localStorage.getItem(KEY) || "null") || {
+  available: 0, accrued: 0, owned: [], last: Date.now(), hist: [], refEarn: 10, partners: 0
+};
+function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+function dayEarn(m){ return m.cost * m.pct / 100; }
+function ownedMachines(){ return machines.filter(m => data.owned.includes(m.id)); }
+function daily(){ return ownedMachines().reduce((s,m)=>s+dayEarn(m),0); }
+function holding(){ return ownedMachines().reduce((s,m)=>s+m.cost,0); }
+function tick(){
+  const now = Date.now();
+  const days = (now - data.last) / 86400000;
+  if (days > 0 && data.owned.length) data.accrued += daily() * days;
+  data.last = now;
+  save();
+}
+function fmt(n){ return Number(n).toFixed(2); }
+function usd(n){ return (Number(n)*RATE).toFixed(6); }
+function popup(message){ if (tg && tg.showPopup) tg.showPopup({message}); else alert(message); }
+
+function machineArt(id){
+  const stacks = id > 6 ? 2 : 1;
+  const bodyH = 34 + Math.min(id, 8) * 3;
+  return `<svg viewBox="0 0 160 110" width="132" height="92">
+    <defs>
+      <linearGradient id="sl${id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f4f6f8"/>
+        <stop offset=".45" stop-color="#c5ccd3"/>
+        <stop offset="1" stop-color="#8d98a3"/>
+      </linearGradient>
+      <linearGradient id="dk${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9aa3ad"/>
+        <stop offset="1" stop-color="#5e6770"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="80" cy="100" rx="58" ry="6" fill="#1f4e79" opacity=".08"/>
+    <rect x="28" y="${78-bodyH}" width="104" height="${bodyH}" rx="4" fill="url(#sl${id})" stroke="#6d7680"/>
+    <rect x="36" y="${86-bodyH}" width="42" height="${bodyH-16}" rx="2" fill="#2f343a"/>
+    <path d="M40 ${90-bodyH}l34 0" stroke="#9eb0c4" stroke-width="2" opacity=".7"/>
+    <g fill="url(#dk${id})" stroke="#5c656e">
+      ${stacks===2
+        ? `<rect x="58" y="${48-bodyH}" width="12" height="24"/><rect x="86" y="${42-bodyH}" width="12" height="30"/>`
+        : `<rect x="74" y="${46-bodyH}" width="14" height="26"/>`}
+    </g>
+    <rect x="92" y="${88-bodyH}" width="30" height="8" rx="1" fill="#dfe4e8" stroke="#7d868f"/>
+    <rect x="92" y="${100-bodyH}" width="30" height="8" rx="1" fill="#dfe4e8" stroke="#7d868f"/>
+    <rect x="24" y="78" width="112" height="10" rx="2" fill="url(#dk${id})" stroke="#5c656e"/>
+    <circle cx="46" cy="96" r="7" fill="#4e555c" stroke="#2c3136"/>
+    <circle cx="114" cy="96" r="7" fill="#4e555c" stroke="#2c3136"/>
+    <circle cx="46" cy="96" r="2" fill="#cfd5db"/>
+    <circle cx="114" cy="96" r="2" fill="#cfd5db"/>
+  </svg>`;
+}
+
+function render(){
+  tick();
+  const d = daily();
+  document.getElementById("avail").textContent = fmt(data.available);
+  document.getElementById("accrued").textContent = fmt(data.accrued);
+  document.getElementById("perHour").textContent = fmt(d/24);
+  document.getElementById("perDay").textContent = fmt(d);
+  document.getElementById("perMonth").textContent = fmt(d*30);
+  document.getElementById("wAvail").textContent = fmt(data.available) + " SRV";
+  document.getElementById("usdAvail").textContent = usd(data.available) + " USDT";
+  document.getElementById("wHold").textContent = fmt(holding()) + " SRV";
+  document.getElementById("prefEarn").textContent = fmt(data.refEarn);
+  document.getElementById("prefCount").textContent = data.partners;
+  document.getElementById("pown").textContent = data.owned.length + " / 12";
+
+  document.getElementById("slots").innerHTML = machines.map(m=>{
+    const own = data.owned.includes(m.id);
+    const earn = dayEarn(m);
+    return `<div class="mcard">
+      <div class="label">INCOME</div>
+      <div class="row"><span class="coin">S</span><b style="font-size:22px;color:#16324f">${fmt(earn*30)}</b></div>
+      <div class="muted">PER MONTH</div>
+      <div class="frame">${machineArt(m.id)}${own ? `<div class="stamp">OWNED</div>` : ``}</div>
+      <div>Income <b>${m.pct}%</b> per day</div>
+      <div class="row"><span class="coin">S</span><b>${fmt(earn)}</b></div>
+      ${own
+        ? `<button class="btn light" disabled>Owned</button>`
+        : `<button class="btn" onclick="buy(${m.id})">Buy ${fmt(m.cost)} SRV</button>`}
+    </div>`;
+  }).join("");
+
+  const hist = data.hist.slice().reverse();
+  document.getElementById("hist").innerHTML = hist.length ? hist.map(h=>
+    `<div class="card hist"><b>${h.type}</b><div class="muted">${h.time}</div>
+     <div>${fmt(h.srv)} SRV = ${usd(h.srv)} USDT</div>
+     <div class="muted">${h.addr||""}</div></div>`
+  ).join("") : `<div class="card muted">No withdrawals yet</div>`;
+}
+
+function buy(id){
+  const m = machines[id-1];
+  if (data.owned.includes(id)) return;
+  if (data.available < m.cost){ popup("Not enough SRV. Deposit first."); return; }
+  tick();
+  data.available -= m.cost;
+  data.owned.push(id);
+  save(); render();
+}
+document.getElementById("collect").onclick = ()=>{
+  tick();
+  if (data.accrued <= 0){ popup("Nothing to collect yet."); return; }
+  data.available += data.accrued;
+  data.accrued = 0;
+  save(); render();
+};
+document.getElementById("depUsdt").oninput = e=>{
+  const u = Number(e.target.value||0);
+  document.getElementById("depHint").textContent = u + " USDT = " + fmt(u/RATE) + " SRV";
+};
+document.getElementById("wdSrv").oninput = e=>{
+  const s = Number(e.target.value||0);
+  document.getElementById("wdHint").textContent = fmt(s) + " SRV = " + usd(s) + " USDT";
+};
+document.getElementById("doDep").onclick = ()=>{
+  const u = Number(document.getElementById("depUsdt").value||0);
+  if (u<=0) return;
+  data.available += u / RATE;
+  save(); render();
+  popup("Demo deposit added. Real credit needs a confirmed payment.");
+};
+document.getElementById("doWd").onclick = ()->{
+  const s = Number(document.getElementById("wdSrv").value||0);
+  const addr = document.getElementById("wdAddr").value.trim();
+  if (s<=0) return;
+  if (!addr){ popup("Enter USDT address"); return; }
+  if (data.available < s){ popup("Not enough available SRV"); return; }
+  data.available -= s;
+  data.hist.push({type:"Withdraw", srv:s, addr, time:new Date().toLocaleString()});
+  save(); render();
+  popup("Withdrawal recorded. Real payout needs a backend.");
+};
+document.getElementById("copyRef").onclick = async ()=>{
+  try{ await navigator.clipboard.writeText(document.getElementById("ref").textContent); }catch(e){}
+  popup("Invite link copied");
+};
+document.querySelectorAll(".nav button").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("on"));
+    document.getElementById(btn.dataset.page).classList.add("active");
+    btn.classList.add("on");
+  };
+});
+window.buy = buy;
+setInterval(render, 1000);
+render();
+</script>
+</body>
+</html>
