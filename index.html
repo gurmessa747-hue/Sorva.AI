@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Sorva.AI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#101114;color:#f2f3f5;font-family:system-ui,sans-serif;padding:16px 16px 120px}
+    .wrap{max-width:430px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .brand{font-weight:800;letter-spacing:.08em}
+    .muted{color:#9aa1aa;font-size:12px}
+    .page{display:none}.page.active{display:block}
+    h2{margin:0 0 12px;font-size:28px}
+    .center{text-align:center}
+    .hero,.card,.task{border:1px solid #2a2d33;border-radius:18px;padding:14px;margin-bottom:10px;background:#1a1c20}
+    .bal{font-size:30px;font-weight:800;margin:4px 0}
+    .toprow{display:grid;grid-template-columns:1.6fr .7fr;gap:8px}
+    .label{font-size:11px;letter-spacing:.12em;color:#9aa1aa}
+    .coin{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-right:6px;background:#3a3f46;color:#fff}
+    .row{display:flex;align-items:center;gap:10px}
+    .between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .btn{border:0;background:#3c82f6;color:#fff;border-radius:14px;padding:14px;font-weight:800;width:100%}
+    .btn.sm{width:auto;border-radius:999px;padding:10px 16px}
+    .btn.gray{background:#2a2e35;color:#d7dbe0}
+    .btn:disabled{opacity:.45}
+    input{width:100%;padding:14px;border:0;border-radius:14px;margin:6px 0 10px;font-size:22px;background:#262a31;color:#fff}
+    .nav{position:fixed;left:0;right:0;bottom:0;background:#0e1013;border-top:1px solid #23262b;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 4px 12px;z-index:10}
+    .nav button{border:0;background:0;color:#d5dbe1;font-size:13px;font-weight:700;padding:4px 0 2px;display:flex;flex-direction:column;align-items:center;gap:2px}
+    .bubble{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;background:#1c1f24}
+    .nav button.on .bubble{background:#3c82f6;color:#fff;width:68px;height:68px;margin-top:-26px;font-size:28px;box-shadow:0 8px 18px rgba(0,0,0,.4)}
+    .nav button.on span:last-child{color:#3c82f6;font-size:14px;font-weight:800}
+    .split{display:flex;align-items:center;gap:8px;margin:8px 0 12px;color:#9aa1aa;font-size:11px;letter-spacing:.16em}
+    .split:before,.split:after{content:"";height:1px;background:#2a2d33;flex:1}
+    .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+    .stat{border:1px solid #2a2d33;border-radius:12px;padding:10px;text-align:center;background:#14161a}
+    .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .mcard{border:1px solid #2a2d33;border-radius:16px;padding:12px;background:#1a1c20}
+    .frame{border:1px solid #2a2d33;border-radius:12px;height:120px;display:flex;align-items:center;justify-content:center;margin:8px 0;background:#14161a;position:relative}
+    .stamp{position:absolute;border:2px solid #3f7d57;color:#7dcea0;padding:4px 8px;font-size:12px;font-weight:800;transform:rotate(-12deg)}
+    .sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:20}
+    .sheet.on{display:block}
+    .panel{position:absolute;left:0;right:0;bottom:0;background:#17191d;border-radius:22px 22px 0 0;padding:16px 16px 28px;max-height:92vh;overflow:auto}
+    .nets{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .net{border:1px solid #2c3138;background:#20242b;border-radius:16px;padding:10px;text-align:left;color:#fff}
+    .net.on{border-color:#3c82f6;background:#1b2a44}
+    .chip{border:0;background:#262a31;color:#fff;border-radius:12px;padding:10px 0;font-weight:700}
+    .chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+    .reward{color:#7eb6ff;font-weight:800}
+    .ico{width:42px;height:42px;border-radius:12px;background:#243044;color:#7eb6ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+    .ok{color:#3dce7a}
+    .link{font-size:12px;color:#9aa1aa;word-break:break-all}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">SORVA.AI</div>
+    <div class="muted" id="user">Miner</div>
+  </header>
+
+  <section class="page active" id="mine">
+    <div class="toprow">
+      <div class="hero"><div class="label">YOUR BALANCE</div><div class="row"><span class="coin">S</span><div class="bal" id="avail">0.00</div></div></div>
+      <div class="hero" style="text-align:center"><div class="label">TOKEN</div><b>SRV</b></div>
+    </div>
+    <div class="hero">
+      <div class="split">ACCRUED</div>
+      <div class="row"><span class="coin">S</span><div class="bal" id="accrued">0.00</div></div>
+      <div class="stats">
+        <div class="stat"><div class="label">HOUR</div><b id="perHour">0.00</b></div>
+        <div class="stat"><div class="label">DAY</div><b id="perDay">0.00</b></div>
+        <div class="stat"><div class="label">MONTH</div><b id="perMonth">0.00</b></div>
+      </div>
+      <button class="btn" id="collect">COLLECT</button>
+    </div>
+    <div class="mgrid" id="slots"></div>
+  </section>
+
+  <section class="page" id="partners">
+    <div class="label">SORVA.AI</div>
+    <h2 class="center">Referrals</h2>
+    <div class="muted center" style="margin:-6px 0 14px">Invite friends to boost your profits</div>
+    <div class="card between">
+      <div class="row"><div class="ico">🔗</div><div><b>Your Invite Link</b><div class="link" id="ref">https://t.me/sorvaai_bot/app</div></div></div>
+      <button class="btn sm" id="copyRef">Copy</button>
+    </div>
+    <div class="card row">
+      <div class="ico">👥</div>
+      <div><b>Your Referrals</b><div class="muted"><span id="prefCount">0</span> qualified · <span id="prefTotal">0</span> total</div></div>
+    </div>
+    <div class="card between">
+      <div class="row"><div class="ico">🎁</div><div><b>Referral Reward</b><div class="muted"><span id="prefEarn">10.00</span> available · +10 SRV + 10% each</div></div></div>
+      <button class="btn sm gray" id="claimRef">Claim</button>
+    </div>
+    <div class="card between">
+      <div class="row"><div class="ico">⏳</div><div><b>Team Wallet</b><div class="ok">● mining</div><div class="muted" id="teamLine">0.00 SRV from your network</div></div></div>
+      <button class="btn sm" id="shareRef">Share</button>
+    </div>
+    <div class="muted center" style="margin:14px 0 8px">Latest invited friends</div>
+    <div id="friendList"></div>
+  </section>
+
+  <section class="page" id="tasks">
+    <h2>Tasks</h2>
+    <div class="task">
+      <div class="row" style="margin-bottom:8px"><div class="ico">▶</div><div><b>Watch Ads</b><div class="reward" id="adLine">+15 SRV per ad · 0/10 today</div></div></div>
+      <div class="muted" id="adLeft">10 left today</div>
+      <button class="btn" id="watchAd" style="margin-top:10px">Watch Ad (+15 SRV)</button>
+    </div>
+    <div class="task"><div class="between"><b>Join Sorva channel</b><span class="reward">+50 SRV</span></div><div class="muted">Open the channel, then claim.</div><button class="btn" id="claimChannel">Claim</button></div>
+    <div class="task"><div class="between"><b>Invite 1 friend</b><span class="reward">+100 SRV</span></div><div class="muted">Share your invite link.</div><button class="btn" id="claimInvite">Claim</button></div>
+    <div class="label" style="margin:14px 0 8px">PARTNER TASKS</div>
+    <div class="task"><div class="between"><b>Join partner chat</b><span class="reward">+15 SRV</span></div><button class="btn" id="claimPartner">Claim</button></div>
+  </section>
+
+  <section class="page" id="wallet">
+    <h2>Wallet</h2>
+    <div class="hero"><div class="muted">Available</div><div class="bal" id="wAvail">0.00 SRV</div><div class="muted" id="usdAvail">0.000000 USDT</div></div>
+    <div class="grid"><button class="btn" id="openDep">Deposit</button><button class="btn gray" id="openWd">Withdraw</button></div>
+    <h2 style="margin-top:16px">History</h2>
+    <div id="hist"></div>
+  </section>
+
+  <section class="page" id="profile">
+    <h2>Profile</h2>
+    <div class="card"><div class="muted">Name</div><b id="pname">Miner</b></div>
+    <div class="card"><div class="muted">Telegram ID</div><b id="pid">—</b></div>
+    <div class="card"><div class="muted">Machines owned</div><b id="pown">0 / 12</b></div>
+  </section>
+</div>
+
+<nav class="nav">
+  <button data-page="partners"><span class="bubble">👥</span><span>Referrals</span></button>
+  <button data-page="tasks"><span class="bubble">☑</span><span>Tasks</span></button>
+  <button data-page="mine" class="on"><span class="bubble">⚙</span><span>Mine</span></button>
+  <button data-page="wallet"><span class="bubble">▣</span><span>Wallet</span></button>
+  <button data-page="profile"><span class="bubble">👤</span><span>Profile</span></button>
+</nav>
+
+<div class="sheet" id="depSheet"><div class="panel">
+  <div class="between"><h2>Top up</h2><button class="btn gray sm" id="closeDep">Close</button></div>
+  <div class="muted">Top-up amount</div>
+  <input id="depUsdt" type="number" value="3">
+  <div class="chips" id="depChips"></div>
+  <div class="nets" id="depNets"></div>
+  <button class="btn" id="doDep" style="margin-top:12px">Top up</button>
+</div></div>
+<div class="sheet" id="wdSheet"><div class="panel">
+  <div class="between"><h2>Withdraw</h2><button class="btn gray sm" id="closeWd">Close</button></div>
+  <div class="muted">Withdrawal amount</div>
+  <input id="wdSrv" type="number" value="0.1">
+  <div class="nets" id="wdNets"></div>
+  <div class="muted" style="margin-top:10px">Wallet</div>
+  <input id="wdAddr" placeholder="Wallet address" style="font-size:16px">
+  <button class="btn" id="doWd">Withdraw</button>
+</div></div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const RATE = 0.001;
+const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+const name = (user && user.first_name) || "Miner";
+document.getElementById("user").textContent = name;
+document.getElementById("pname").textContent = name;
+document.getElementById("pid").textContent = (user && user.id) || "Open in Telegram";
+if (user && user.id) document.getElementById("ref").textContent = "https://t.me/sorvaai_bot/app?startapp=" + user.id;
+const machines = [
+  {id:1,cost:1,pct:10},{id:2,cost:3,pct:12},{id:3,cost:5,pct:14},{id:4,cost:10,pct:16},
+  {id:5,cost:20,pct:18},{id:6,cost:40,pct:20},{id:7,cost:80,pct:22},{id:8,cost:150,pct:24},
+  {id:9,cost:300,pct:26},{id:10,cost:600,pct:28},{id:11,cost:1200,pct:30},{id:12,cost:2500,pct:32}
+];
+const nets = ["USDT BEP20","USDC BEP20","USDT ERC20","USDC ERC20","USDT TON","USDT SOL","BTC","ETH","SOL","BNB","TON"];
+let depNet = nets[0], wdNet = nets[0];
+const KEY = "sorva_v7";
+const data = JSON.parse(localStorage.getItem(KEY) || "null") || {
+  available:0,accrued:0,owned:[],last:Date.now(),hist:[],refEarn:10,partners:0,ads:0,claims:{},
+  friends:[]
+};
+function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+function dayEarn(m){ return m.cost * m.pct / 100; }
+function ownedMachines(){ return machines.filter(m => data.owned.includes(m.id)); }
+function daily(){ return ownedMachines().reduce((s,m)=>s+dayEarn(m),0); }
+function tick(){
+  const now = Date.now();
+  const days = (now - data.last) / 86400000;
+  if (days > 0 && data.owned.length) data.accrued += daily() * days;
+  data.last = now; save();
+}
+function fmt(n){ return Number(n).toFixed(2); }
+function usd(n){ return (Number(n)*RATE).toFixed(6); }
+function popup(message){ if (tg && tg.showPopup) tg.showPopup({message}); else alert(message); }
+function machineArt(id){
+  const h = 34 + Math.min(id,8)*3;
+  return `<svg viewBox="0 0 160 110" width="120" height="84"><rect x="28" y="${78-h}" width="104" height="${h}" rx="4" fill="#c5ccd3" stroke="#6d7680"/><rect x="36" y="${86-h}" width="40" height="${h-16}" fill="#2f343a"/><rect x="24" y="78" width="112" height="10" fill="#8d98a3"/></svg>`;
+}
+function netButtons(target, selected, pick){
+  document.getElementById(target).innerHTML = nets.map(n=>`<button class="net ${n===selected?"on":""}" onclick="${pick}('${n}')"><b>${n}</b><div class="muted">min. 3 USDT</div></button>`).join("");
+}
+function render(){
+  tick();
+  const d = daily();
+  document.getElementById("avail").textContent = fmt(data.available);
+  document.getElementById("accrued").textContent = fmt(data.accrued);
+  document.getElementById("perHour").textContent = fmt(d/24);
+  document.getElementById("perDay").textContent = fmt(d);
+  document.getElementById("perMonth").textContent = fmt(d*30);
+  document.getElementById("wAvail").textContent = fmt(data.available)+" SRV";
+  document.getElementById("usdAvail").textContent = usd(data.available)+" USDT";
+  document.getElementById("prefEarn").textContent = fmt(data.refEarn);
+  document.getElementById("prefCount").textContent = data.partners;
+  document.getElementById("prefTotal").textContent = data.friends.length;
+  document.getElementById("teamLine").textContent = fmt(data.refEarn)+" SRV from your network";
+  document.getElementById("pown").textContent = data.owned.length+" / 12";
+  document.getElementById("adLine").textContent = "+15 SRV per ad · "+data.ads+"/10 today";
+  document.getElementById("adLeft").textContent = (10-data.ads)+" left today";
+  document.getElementById("friendList").innerHTML = data.friends.length ? data.friends.map(f=>`<div class="card between"><div class="row"><div class="ico">👤</div><div><b>${f.name}</b><div class="ok">● Active</div></div></div><button class="btn sm">SRV</button></div>`).join("") : `<div class="card muted">No friends yet</div>`;
+  document.getElementById("slots").innerHTML = machines.map(m=>{
+    const own = data.owned.includes(m.id), earn = dayEarn(m);
+    return `<div class="mcard"><div class="label">INCOME</div><div class="row"><span class="coin">S</span><b style="font-size:22px">${fmt(earn*30)}</b></div><div class="muted">PER MONTH</div><div class="frame">${machineArt(m.id)}${own?'<div class="stamp">OWNED</div>':''}</div><div>Income <b>${m.pct}%</b> per day</div><div class="row"><span class="coin">S</span><b>${fmt(earn)}</b></div>${own?'<button class="btn gray" disabled>Owned</button>':`<button class="btn" onclick="buy(${m.id})">Buy ${fmt(m.cost)} SRV</button>`}</div>`;
+  }).join("");
+  const hist = data.hist.slice().reverse();
+  document.getElementById("hist").innerHTML = hist.length ? hist.map(h=>`<div class="card"><b>${h.type}</b><div class="muted">${h.time}</div><div>${h.detail}</div></div>`).join("") : `<div class="card muted">No history yet</div>`;
+  ["claimChannel","claimInvite","claimPartner"].forEach(id=>{
+    const b = document.getElementById(id);
+    if (data.claims[id]) { b.textContent = "Claimed"; b.disabled = true; b.classList.add("gray"); }
+  });
+}
+function buy(id){
+  const m = machines[id-1];
+  if (data.owned.includes(id) || data.available < m.cost){ if (data.available < m.cost) popup("Not enough SRV."); return; }
+  tick(); data.available -= m.cost; data.owned.push(id); save(); render();
+}
+function pickDep(n){ depNet = n; netButtons("depNets", depNet, "pickDep"); }
+function pickWd(n){ wdNet = n; netButtons("wdNets", wdNet, "pickWd"); }
+window.buy = buy; window.pickDep = pickDep; window.pickWd = pickWd;
+document.getElementById("collect").onclick = ()=>{ tick(); if (data.accrued<=0){ popup("Nothing to collect yet."); return; } data.available += data.accrued; data.accrued = 0; save(); render(); };
+document.getElementById("openDep").onclick = ()=>{ document.getElementById("depSheet").classList.add("on"); pickDep(depNet); };
+document.getElementById("openWd").onclick = ()=>{ document.getElementById("wdSheet").classList.add("on"); pickWd(wdNet); };
+document.getElementById("closeDep").onclick = ()=> document.getElementById("depSheet").classList.remove("on");
+document.getElementById("closeWd").onclick = ()=> document.getElementById("wdSheet").classList.remove("on");
+document.getElementById("depChips").innerHTML = [5,10,30,100,300].map(n=>`<button class="chip" onclick="document.getElementById('depUsdt').value=${n}">${n}</button>`).join("");
+document.getElementById("doDep").onclick = ()=>{
+  const u = Number(document.getElementById("depUsdt").value||0);
+  if (u < 3){ popup("Minimum is 3 USDT."); return; }
+  data.available += u / RATE;
+  data.hist.push({type:"Deposit", time:new Date().toLocaleString(), detail:u+" USDT via "+depNet});
+  save(); render(); document.getElementById("depSheet").classList.remove("on");
+  popup("Demo deposit added. Real credit needs a confirmed payment.");
+};
+document.getElementById("doWd").onclick = ()=>{
+  const s = Number(document.getElementById("wdSrv").value||0);
+  const addr = document.getElementById("wdAddr").value.trim();
+  if (!addr){ popup("Enter a wallet address"); return; }
+  if (data.available < s){ popup("Not enough SRV"); return; }
+  data.available -= s;
+  data.hist.push({type:"Withdraw", time:new Date().toLocaleString(), detail:fmt(s)+" SRV via "+wdNet+" to "+addr});
+  save(); render(); document.getElementById("wdSheet").classList.remove("on");
+  popup("Withdrawal recorded. Real payout needs a backend.");
+};
+document.getElementById("watchAd").onclick = ()=>{ if (data.ads>=10){ popup("Daily ad limit reached."); return; } data.ads += 1; data.available += 15; save(); render(); };
+function claim(id, amount){ if (data.claims[id]) return; data.claims[id] = true; data.available += amount; save(); render(); }
+document.getElementById("claimChannel").onclick = ()=> claim("claimChannel", 50);
+document.getElementById("claimInvite").onclick = ()=> claim("claimInvite", 100);
+document.getElementById("claimPartner").onclick = ()=> claim("claimPartner", 15);
+document.getElementById("claimRef").onclick = ()=>{
+  if (data.refEarn <= 0){ popup("Nothing to claim."); return; }
+  data.available += data.refEarn; data.refEarn = 0; save(); render();
+};
+async function copyLink(){
+  const link = document.getElementById("ref").textContent;
+  try{ await navigator.clipboard.writeText(link); }catch(e){}
+  popup("Invite link copied");
+}
+document.getElementById("copyRef").onclick = copyLink;
+document.getElementById("shareRef").onclick = async ()=>{
+  const link = document.getElementById("ref").textContent;
+  const text = "Invite friends to boost your profits "+link;
+  if (navigator.share) { try { await navigator.share({text}); return; } catch(e){} }
+  copyLink();
+};
+document.querySelectorAll(".nav button").forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("on"));
+    document.getElementById(btn.dataset.page).classList.add("active");
+    btn.classList.add("on");
+  };
+});
+setInterval(render, 1000);
+render();
+</script>
+</body>
+</html>
